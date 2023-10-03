@@ -1,7 +1,7 @@
 import { FC, use, useEffect, useState } from 'react';
 import { Select } from './Select';
 import { SelectItem } from '@/types';
-import { AGENT, ITERATIONS, MODELS } from '@/utils/constants';
+import { ALL_AGENTS, ITERATIONS, MODELS } from '@/utils/constants';
 import { translate } from '../../utils/translate';
 import { getUserApiKey } from '@/utils/settings';
 
@@ -26,18 +26,18 @@ export const AgentParameter: FC<AgentParameterProps> = ({
   agent,
   setAgent,
 }) => {
-  const [agentOption, setAgentOption] = useState<SelectItem[]>(AGENT);
+  const [agentOption, setAgentOption] = useState<SelectItem[]>(ALL_AGENTS);
   useEffect(() => {
     let option: SelectItem[] = [];
     if (model.id !== 'gpt-4') {
-      option = AGENT.filter(
+      option = ALL_AGENTS.filter(
         (agent) =>
           agent.id === 'babyagi' ||
           agent.id === 'babydeeragi' ||
           agent.id === 'babyelfagi',
       );
     } else {
-      option = AGENT;
+      option = ALL_AGENTS;
     }
     setAgent(option[0]);
     setAgentOption(option);
@@ -55,11 +55,11 @@ export const AgentParameter: FC<AgentParameterProps> = ({
           }}
         />
         <Select
-          label={translate('AGENT')}
+          label={translate('ALL_AGENTS')}
           item={agent}
           items={agentOption}
           onChange={(value) => {
-            setAgent(AGENT.find((agent) => agent.id === value)!);
+            setAgent(ALL_AGENTS.find((agent) => agent.id === value)!);
           }}
         />
       </div>

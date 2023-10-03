@@ -13,7 +13,7 @@ export const AgentMessageHeader: FC<AgentMessageHeaderProps> = ({
 }) => {
   return (
     <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-4 text-sm text-neutral-500 dark:border-neutral-800 dark:bg-transparent dark:text-neutral-200">
-      {`${translate('MODEL')}: ${model.name} | ${translate('AGENT')}: ${
+      {`${translate('MODEL')}: ${model.name} | ${translate('ALL_AGENTS')}: ${
         agent.name
       } ${agent.icon}`}
     </div>

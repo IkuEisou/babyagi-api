@@ -11,7 +11,7 @@ import {
   groupMessages,
   convertToAgentMessages,
 } from '../../utils/message';
-import { AGENT, ITERATIONS, MODELS } from '@/utils/constants';
+import { ALL_AGENTS, ITERATIONS, MODELS } from '@/utils/constants';
 import { translate } from '@/utils/translate';
 import { useTranslation } from 'next-i18next';
 import { IntroGuide } from './IntroGuide';
@@ -45,7 +45,7 @@ export const AgentView: FC = () => {
   const [firstTask, setFirstTask] = useState<string>(
     translate('FIRST_TASK_PLACEHOLDER', 'constants'),
   );
-  const [selectedAgent, setSelectedAgent] = useState<SelectItem>(AGENT[0]);
+  const [selectedAgent, setSelectedAgent] = useState<SelectItem>(ALL_AGENTS[0]);
   const [language, setLanguage] = useState(i18n.language);
   const [agentBlocks, setAgentBlocks] = useState<Block[]>([]);
 
