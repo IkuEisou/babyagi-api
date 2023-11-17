@@ -82,6 +82,7 @@ export type AgentStatusType =
 
 export type UserSettings = {
   openAIApiKey?: string;
+  searchApiKey?: string;
   notifications?: boolean;
   enabledGPT4?: boolean;
 };

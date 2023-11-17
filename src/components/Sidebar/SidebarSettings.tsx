@@ -108,6 +108,7 @@ export const SidebarSettings: FC = () => {
 
   const setGPT4Permission = async () => {
     const openAIApiKey = getUserApiKey();
+    console.info(`UserOpenAIApiKey : ${openAIApiKey}`)
     try {
       const res = await axios.get('https://api.openai.com/v1/models/gpt-4', {
         headers: {
@@ -118,6 +119,7 @@ export const SidebarSettings: FC = () => {
       const enabled = data !== undefined;
       setEnabledGPT4(enabled);
     } catch (error) {
+      console.info(`UserOpenAIApiKey : ${openAIApiKey}`)
       console.error(error);
     }
   };
@@ -215,6 +217,43 @@ export const SidebarSettings: FC = () => {
                   </div>
                   <label className="text-xs text-neutral-400">
                     👉 {translate('SET_OPENAI_API_KEY')}
+                  </label>
+                  <label
+                    htmlFor="searchApiKey"
+                    className="text-xs font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    {translate('SEARCH_API_KEY')}
+                  </label>
+                  <div className="inline-flex w-full items-center justify-center space-x-1">
+                    <input
+                      id="searchApiKey"
+                      type="text"
+                      placeholder={translate('SEARCH_API_KEY')}
+                      className={clsx(
+                        'block w-full rounded p-2',
+                        'text-sm text-gray-700 placeholder:text-gray-500 dark:text-gray-400 dark:placeholder:text-gray-600',
+                        'border border-gray-200 focus-visible:border-transparent dark:border-neutral-700 dark:bg-neutral-800',
+                        'focus:outline-none focus-visible:ring focus-visible:ring-neutral-500 focus-visible:ring-opacity-10',
+                      )}
+                      value={settings?.searchApiKey ?? ''}
+                      onChange={handleValueChange}
+                    />
+                    <DialogPrimitive.DialogClose asChild>
+                      <button
+                        className={clsx(
+                          'inline-flex min-w-[64px] select-none justify-center rounded-md px-4 py-2 text-sm font-medium',
+                          'bg-black text-white hover:bg-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600',
+                          'border border-transparent',
+                          'focus:outline-none focus-visible:ring focus-visible:ring-neutral-500 focus-visible:ring-opacity-10',
+                        )}
+                        onClick={handleSave}
+                      >
+                        {translate('SAVE')}
+                      </button>
+                    </DialogPrimitive.DialogClose>
+                  </div>
+                  <label className="text-xs text-neutral-400">
+                    👉 {translate('SET_SEARCH_API_KEY')}
                   </label>
                 </fieldset>
                 <fieldset className="flex flex-col items-start space-y-1">
