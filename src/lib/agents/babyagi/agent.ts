@@ -280,8 +280,10 @@ export class BabyAGI {
 
   // only used for client-side openai api requests
   async getContext(objective: string, taskName: string) {
-    const userApiKey = getUserApiKey() ?? undefined;
-
+    const userApiKey = getUserApiKey() ?? process.env.AZURE_OPENAI_API_KEY ?? undefined;
+    console.info('getUserApiKey():', getUserApiKey())
+    console.info('AZURE_OPENAI_API_KEY:', process.env.AZURE_OPENAI_API_KEY)
+    console.info('userApiKey:', userApiKey)
     if (!userApiKey) {
       throw new Error('OpenAI API key not found');
     }

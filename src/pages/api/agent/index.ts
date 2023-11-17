@@ -41,9 +41,11 @@ function validateEnvironmentVariables() {
 }
 
 function validateUserKey(user_key: string) {
-  if (
+  if (process.env.AZURE_OPENAI_API_KEY === undefined &&
     process.env.NEXT_PUBLIC_USE_USER_API_KEY === 'true' &&
-    (user_key === undefined || user_key === null || !user_key.startsWith('sk-'))
+    (user_key === undefined || user_key === null 
+      // || !user_key.startsWith('sk-')
+    )
   ) {
     throw new Error('Invalid user key');
   }

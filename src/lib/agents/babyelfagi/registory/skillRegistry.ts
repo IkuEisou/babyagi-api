@@ -99,7 +99,7 @@ export class SkillRegistry {
   }
 
   static apiKeys = {
-    openai: process.env.OPENAI_API_KEY || '',
+    openai: process.env.OPENAI_API_KEY || process.env.AZURE_OPENAI_API_KEY || '',
     airtable: process.env.AIRTABLE_API_KEY || '',
   };
 
