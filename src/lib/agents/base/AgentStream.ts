@@ -1,7 +1,7 @@
-import { AIStreamCallbacks, createCallbacksTransformer } from 'ai';
+import { OpenAIStreamCallbacks, createCallbacksTransformer } from 'ai';
 import { AgentMessage } from '@/types';
 
-export function AgentStream(callbacks?: AIStreamCallbacks) {
+export function AgentStream(callbacks?: OpenAIStreamCallbacks) {
   const stream = new TransformStream();
   const writer = stream.writable.getWriter();
   let observers: ((isActive: boolean) => void)[] = [];
