@@ -1,11 +1,14 @@
 FROM node:19
 
+#RUN npm install -g npm@10.2.0
+
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm ci
-
+RUN npm install
+RUN npm i formidable @types/formidable form-data fs
+# RUN npm exec openai migrate
 COPY . .
 
 RUN npm run build
