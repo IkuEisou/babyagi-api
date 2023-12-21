@@ -13,7 +13,7 @@ const handler = async (
   }
   try {
     let openAIApiKey = process.env.OPENAI_API_KEY || getUserApiKey();
-    const { openaikey,instructions,name,file_ids,thread_id, assistant_id, run_id } = req.body;
+    const { openaikey,instructions,name,file_ids,thread_id, assistant_id, run_id, keywords,msg_query_times,interval_seconds } = req.body;
     if(openaikey !==  undefined) openAIApiKey = openaikey[0];
     const openai = new OpenAI({
       apiKey: openAIApiKey,
@@ -73,20 +73,23 @@ const handler = async (
         console.log("Waited 10s");
       }
       let isFinished = false;
+      let overtime = 0
+      let results = {"thread_id":"","msg":""}
       do{
         const threadMessages = await openai.beta.threads.messages.list(
           th_id.toString()
         );
-        console.info(`msg assistant_id: ${threadMessages.data[0].assistant_id}`)
-        console.info(`msg run_id: ${threadMessages.data[0].run_id}`)
-        isFinished = threadMessages.data[0].assistant_id !== null && threadMessages.data[0].run_id !== null;
-        if(isFinished){
-          res.status(200).json(threadMessages.data);
-        }else{
-          await setTimeout(15000);
-          console.log("Waited 15s");
-        }
-      }while(!isFinished)
+        console.info(`msg thread_id: ${threadMessages.data[0].thread_id}`)
+        console.info(`msg created_at: ${threadMessages.data[0].created_at}`)
+        results["thread_id"] = threadMessages.data[0].thread_id
+        results["msg"] =  threadMessages.data[0].content[0].type === 'text' ?  threadMessages.data[0].content[0].text.value : '';
+        isFinished = threadMessages.data[0].thread_id !== null && threadMessages.data[0].created_at !== null && (keywords !== undefined ? results["msg"].includes(keywords) : threadMessages.data.length > 2);
+        await setTimeout(interval_seconds !== undefined ? interval_seconds : 15 * 1000);
+        console.log(`Waited ${interval_seconds !== undefined ? interval_seconds : 15}s`);
+        overtime = overtime + 1;
+        console.log(`overtime:${overtime}`);
+      }while(!isFinished && overtime < (msg_query_times !== undefined ? msg_query_times : 10))
+      res.status(200).json(results);
   }
   else{
     const myThread = await openai.beta.threads.retrieve(
