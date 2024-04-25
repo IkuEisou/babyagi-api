@@ -53,7 +53,7 @@ const handler = async (
           {
             role: "user",
             content: instruction,
-            file_ids: file_ids,
+            // file_ids: file_ids || '',
           }
         ]
       });
