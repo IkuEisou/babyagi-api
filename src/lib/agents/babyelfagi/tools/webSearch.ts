@@ -9,7 +9,7 @@ export const webSearch = async (query: string) => {
 
     if (process.env.SERP_API_KEY) {
       const response = await fetch(
-        `https://serpapi.com/search?api_key=${process.env.SERP_API_KEY}&engine=google&q=${query}`,
+        `https://serpapi.com/search?api_key=${process.env.SERP_API_KEY}&engine=google&q=${query}&num=10`,
         {
           method: 'GET',
           headers: {
@@ -34,10 +34,12 @@ export const webSearch = async (query: string) => {
             key: process.env.GOOGLE_SEARCH_API_KEY,
             cx: process.env.GOOGLE_CUSTOM_INDEX_ID,
             q: query,
+            num: process.env.GOOGLE_RESULT_NUM,
           }),
         },
       );
       const data = await response.json();
+      // console.log(data);
       return data.items;
     }
   } catch (error) {
