@@ -17,6 +17,12 @@ export const MODELS = [
     name: 'OpenAI gpt-3.5-turbo',
     icon: 'openai-logo.svg',
   },
+  {
+    id: 'gpt-4o-2024-05-13',
+    name: 'OpenAI gpt-4o',
+    message: `GPT_4_WARNING`,
+    icon: 'openai-logo.svg',
+  },
 ];
 
 export const ITERATIONS = [

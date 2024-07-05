@@ -74,7 +74,7 @@ export class BabyAGI {
   }
 
   printGPT4Alert() {
-    if (this.modelName !== 'gpt-4') return;
+    if (!this.modelName.includes('gpt-4')) return;
     console.log(
       '%c*****USING GPT-4. POTENTIALLY EXPENSIVE. MONITOR YOUR COSTS*****%c',
       'color:red',

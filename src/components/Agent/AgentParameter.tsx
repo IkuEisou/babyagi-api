@@ -29,7 +29,7 @@ export const AgentParameter: FC<AgentParameterProps> = ({
   const [agentOption, setAgentOption] = useState<SelectItem[]>(ALL_AGENTS);
   useEffect(() => {
     let option: SelectItem[] = [];
-    if (model.id !== 'gpt-4') {
+    if (!model.id.includes('gpt-4') ) {
       option = ALL_AGENTS.filter(
         (agent) =>
           agent.id === 'babyagi' ||
