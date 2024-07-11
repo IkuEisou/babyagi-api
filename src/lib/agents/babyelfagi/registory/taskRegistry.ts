@@ -63,12 +63,12 @@ export class TaskRegistry {
     const systemPrompt = 'You are a task creation AI.';
     const systemMessage = new SystemChatMessage(systemPrompt);
     const messages = new HumanChatMessage(prompt);
-
+    console.log('CreateTaskList with modelName:'+ modelName);
     let result = '';
     const model = new ChatOpenAI(
       {
         openAIApiKey: this.userApiKey,
-        modelName: this.useSpecifiedSkills ? modelName : 'gpt-4',
+        modelName: this.useSpecifiedSkills ? modelName : 'gpt-4o',
         temperature: 0,
         maxTokens: 1500,
         topP: 1,
