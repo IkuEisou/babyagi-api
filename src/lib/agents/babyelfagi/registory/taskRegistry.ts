@@ -63,12 +63,11 @@ export class TaskRegistry {
     const systemPrompt = 'You are a task creation AI.';
     const systemMessage = new SystemChatMessage(systemPrompt);
     const messages = new HumanChatMessage(prompt);
-    console.log('CreateTaskList with modelName:'+ modelName);
     let result = '';
     const model = new ChatOpenAI(
       {
         openAIApiKey: this.userApiKey,
-        modelName: this.useSpecifiedSkills ? modelName : 'gpt-4o',
+        modelName: this.useSpecifiedSkills ? modelName : 'gpt-4',
         temperature: 0,
         maxTokens: 1500,
         topP: 1,
@@ -77,6 +76,8 @@ export class TaskRegistry {
         callbacks: [
           {
             handleLLMNewToken(token: string) {
+              console.log('CreateTaskList with modelName:'+ modelName);
+              console.log('CreateTaskList with token:'+ token);
               const message: AgentMessage = {
                 id,
                 content: token,
