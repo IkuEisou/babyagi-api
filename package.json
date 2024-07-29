@@ -46,7 +46,7 @@
     "next-i18next": "^13.2.2",
     "next-themes": "^0.2.1",
     "npm": "^9.6.6",
-    "openai": "^4.0.0",
+    "openai": "^4.36.0",
     "react-papaparse":"4.4.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
