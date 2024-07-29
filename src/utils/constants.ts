@@ -26,7 +26,6 @@ export const MODELS = [
   {
     id: 'claude-2.1',
     name: 'Claude 2.1',
-    message: `GPT_4_WARNING`,
     icon: 'claude-ai-logo.svg',
   },
 ];
