@@ -23,6 +23,12 @@ export const MODELS = [
     message: `GPT_4_WARNING`,
     icon: 'openai-logo.svg',
   },
+  {
+    id: 'claude-2.1',
+    name: 'Claude 2.1',
+    message: `GPT_4_WARNING`,
+    icon: 'claude-ai-logo.svg',
+  },
 ];
 
 export const ITERATIONS = [
