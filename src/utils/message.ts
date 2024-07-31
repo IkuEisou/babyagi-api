@@ -213,7 +213,7 @@ export const getToolIcon = (tool: ToolType) => {
 };
 
 export const getExportText = (messages: Message[], agentId?: string) => {
-  if (agentId === 'babydeeragi' || agentId === 'babyelfagi') {
+  if (messages != undefined && agentId === 'babydeeragi' || agentId === 'babyelfagi') {
     // exclude task-execute & user-input messages
     messages = messages.filter(
       (message) =>
@@ -510,6 +510,10 @@ const convertToAgentMessage = (message: Message): AgentMessage => {
 };
 
 export const convertToAgentMessages = (messages: Message[]): AgentMessage[] => {
+  if (messages === undefined) {
+    console.log("messages is null!")
+    return [];
+  }
   return messages
     .filter((message) => message.type !== 'task-execute')
     .map((message) => convertToAgentMessage(message));
