@@ -24,10 +24,13 @@ export const webBrowsing = async (
     dependentTasksOutput.slice(0, 3500),
   );
   const searchQuery = await textCompletion(
+    objective,
     prompt,
     id,
     task,
+    dependentTasksOutput,
     modelName,
+    language,
     userApiKey,
     signal,
   );
@@ -117,10 +120,13 @@ export const webBrowsing = async (
   const outputId = uuidv4();
   const ap = analystPrompt(results, language);
   const analyzedResults = await textCompletion(
+    objective,
     ap,
     outputId,
     task,
+    dependentTasksOutput,
     modelName,
+    language,
     userApiKey,
     signal,
     messageCallback,

@@ -24,8 +24,8 @@ export const MODELS = [
     icon: 'openai-logo.svg',
   },
   {
-    id: 'claude-2.1',
-    name: 'Claude 2.1',
+    id: 'claude-3-5-sonnet-20240620',
+    name: 'ClaudeAI claude-3-5-sonnet',
     icon: 'claude-ai-logo.svg',
   },
 ];

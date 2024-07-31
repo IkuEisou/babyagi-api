@@ -18,6 +18,7 @@ export class Skill {
   // for UI
   handleMessage: (message: AgentMessage) => void;
   verbose: boolean;
+  modelName: string;
   language: string = 'en';
   signal?: AbortSignal;
 
@@ -30,12 +31,14 @@ export class Skill {
     apiKeys: { [key: string]: string },
     handleMessage: (message: AgentMessage) => Promise<void>,
     verbose: boolean = false,
+    modelName: string = "gpt-3.5-turbo",
     language: string = 'en',
     abortSignal?: AbortSignal,
   ) {
     this.apiKeys = apiKeys;
     this.handleMessage = handleMessage;
     this.verbose = verbose;
+    this.modelName = modelName;
     this.language = language;
     this.signal = abortSignal;
     this.id = uuidv4();
@@ -105,7 +108,7 @@ export class Skill {
     const id = uuidv4();
     const defaultParams = {
       apiKey: this.apiKeys.openai,
-      modelName: 'gpt-3.5-turbo',
+      modelName: this.modelName,
       temperature: 0.7,
       maxTokens: 1500,
       topP: 1,

@@ -1,5 +1,7 @@
 import { AgentTask, AgentMessage, TaskOutputs } from '@/types';
 import { ChatOpenAI } from 'langchain/chat_models/openai';
+import { ChatAnthropic } from "@langchain/anthropic";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { parseTasks } from '@/utils/task';
 import { HumanChatMessage, SystemChatMessage } from 'langchain/schema';
 import { SkillRegistry } from './skillRegistry';
@@ -63,46 +65,67 @@ export class TaskRegistry {
     const systemPrompt = 'You are a task creation AI.';
     const systemMessage = new SystemChatMessage(systemPrompt);
     const messages = new HumanChatMessage(prompt);
+    const prompt4Anthropic = ChatPromptTemplate.fromMessages([
+      [
+        "system",
+        systemPrompt,
+      ],
+      ["human", "{input}"],
+    ]);
     let result = '';
-    const model = new ChatOpenAI(
-      {
-        openAIApiKey: this.userApiKey,
-        modelName: this.useSpecifiedSkills ? modelName : 'gpt-4',
-        temperature: 0,
-        maxTokens: 1500,
-        topP: 1,
-        verbose: false, // You can set this to true to see the lanchain logs
-        streaming: true,
-        callbacks: [
-          {
-            handleLLMNewToken(token: string) {
-              console.log('CreateTaskList with modelName:'+ modelName);
-              console.log('CreateTaskList with token:'+ token);
-              const message: AgentMessage = {
-                id,
-                content: token,
-                type: 'task-list',
-                style: 'log',
-                status: 'running',
-              };
-              handleMessage(message);
-            },
-          },
-        ],
-      },
-      { baseOptions: { signal: this.signal } },
-    );
-
+    // console.log('ANTHROPIC_API_KEY:' + process.env['ANTHROPIC_API_KEY']);
+    console.log('CreateTaskList by ' + modelName);
     try {
-      const response = await model.call([systemMessage, messages]);
-      result = response.text;
+      if (modelName.includes('claude')){
+        const model = new ChatAnthropic({
+            apiKey: process.env['ANTHROPIC_API_KEY'],
+            modelName,
+            temperature: 0.2,
+            maxTokensToSample: 800,
+            topP: 1,
+            streaming: true
+          });
+        const response = await prompt4Anthropic.pipe(model).invoke({
+          input: prompt,
+        });
+        result = response.text;
+      }else{
+        const model =  new ChatOpenAI(
+          {
+            openAIApiKey: this.userApiKey,
+            modelName: this.useSpecifiedSkills ? modelName : 'gpt-4',
+            temperature: 0,
+            maxTokens: 1500,
+            topP: 1,
+            verbose: false, // You can set this to true to see the lanchain logs
+            streaming: true,
+            callbacks: [
+              {
+                handleLLMNewToken(token: string) {
+                  const message: AgentMessage = {
+                    id,
+                    content: token,
+                    type: 'task-list',
+                    style: 'log',
+                    status: 'running',
+                  };
+                  handleMessage(message);
+                },
+              },
+            ],
+          },
+          { baseOptions: { signal: this.signal } },
+        );
+          const response = await model.call([systemMessage, messages]);
+          result = response.text;
+      }
     } catch (error: any) {
       if (error.name === 'AbortError') {
         console.log('Task creation aborted');
       }
       console.log(error);
     }
-
+    
     if (result === undefined) {
       return;
     }
@@ -213,27 +236,48 @@ export class TaskRegistry {
   Here is the current task list: ${JSON.stringify(this.tasks)}
   EXAMPLE OUTPUT FORMAT = ${JSON.stringify(example)}
   OUTPUT = `;
-
+    const systemPrompt = 'You are a task creation AI.'
     console.log(
       '\nReflecting on task output to generate new tasks if necessary...\n',
     );
-
-    const model = new ChatOpenAI({
-      openAIApiKey: this.userApiKey,
-      modelName,
-      temperature: 0.7,
-      maxTokens: 1500,
-      topP: 1,
-      frequencyPenalty: 0,
-      presencePenalty: 0,
-    });
-
-    const response = await model.call([
-      new SystemChatMessage('You are a task creation AI.'),
-      new HumanChatMessage(prompt),
+    let result = '';
+    const prompt4Anthropic = ChatPromptTemplate.fromMessages([
+      [
+        "system",
+        systemPrompt,
+      ],
+      ["human", "{input}"],
     ]);
+    console.log('Reflecting on task output to generate new tasks by ' + modelName);
+    if (modelName.includes('claude')){
+      const model =  new ChatAnthropic({
+        apiKey: process.env['ANTHROPIC_API_KEY'],
+        modelName,
+        temperature: 0.7,
+        maxTokensToSample: 1500,
+        topP: 1
+      });
+      const response =  await prompt4Anthropic.pipe(model).invoke({
+        input: prompt,
+      });
+      result = response.text;
+    }else{
+      const model =  new ChatOpenAI({
+        openAIApiKey: this.userApiKey,
+        modelName,
+        temperature: 0.7,
+        maxTokens: 1500,
+        topP: 1,
+        frequencyPenalty: 0,
+        presencePenalty: 0,
+      });
+      const response = await model.call([
+        new SystemChatMessage(systemPrompt),
+        new HumanChatMessage(prompt),
+      ]);
+      result = response.text;
+    }
 
-    const result = response.text;
     console.log('\n' + result);
 
     // Check if the returned result has the expected structure

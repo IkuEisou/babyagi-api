@@ -34,6 +34,7 @@ export class BabyElfAGI extends AgentExecuter {
     this.skillRegistry = new SkillRegistry(
       this.handlers.handleMessage,
       this.verbose,
+      this.modelName,
       this.language,
       specifiedSkills,
       userApiKey,
@@ -149,6 +150,7 @@ export class BabyElfAGI extends AgentExecuter {
               this.objective,
               output,
               skillDescriptions,
+              this.modelName
             );
 
           // Insert new tasks

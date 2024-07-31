@@ -25,7 +25,7 @@ export class WebSearch extends Skill {
         dependentTaskOutputs,
         this.handleMessage,
         this.verbose,
-        undefined,
+        this.modelName,
         this.language,
         this.apiKeys.openai,
         this.signal,

@@ -22,11 +22,13 @@ export class SkillRegistry {
   // for UI
   handleMessage: (message: AgentMessage) => Promise<void>;
   verbose: boolean;
+  modelName: string;
   language: string = 'en';
 
   constructor(
     handleMessage: (message: AgentMessage) => Promise<void>,
     verbose: boolean = false,
+    modelName: string = "gpt-3.5-turbo",
     language: string = 'en',
     specifiedSkills: string[] = [],
     userApiKey?: string,
@@ -38,6 +40,7 @@ export class SkillRegistry {
     this.signal = signal;
     this.handleMessage = handleMessage;
     this.verbose = verbose;
+    this.modelName = modelName;
     this.language = language;
 
     if (this.userApiKey) {
@@ -50,6 +53,7 @@ export class SkillRegistry {
         this.apiKeys,
         this.handleMessage,
         this.verbose,
+        this.modelName,
         this.language,
         this.signal,
       );
