@@ -19,8 +19,11 @@ export const webSearch = async (query: string) => {
       );
       console.log("WebSearch by SERP API.")
       const data = await response.json();
-      return data.organic_results;
-    } else if (
+      if(data.organic_results !== undefined){
+        return data.organic_results;
+      }
+    } 
+    if (
       process.env.GOOGLE_SEARCH_API_KEY &&
       process.env.GOOGLE_CUSTOM_INDEX_ID
     ) {
