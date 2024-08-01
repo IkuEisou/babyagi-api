@@ -6,7 +6,7 @@ export const webSearch = async (query: string) => {
         'The environment variable name has been changed due to a typo: SEARP_API_KEY. Please fix it to SERP_API_KEY.',
       );
     }
-
+    console.log(`WebSearch for ${query}.`)
     if (process.env.SERP_API_KEY) {
       const response = await fetch(
         `https://serpapi.com/search?api_key=${process.env.SERP_API_KEY}&engine=google&q=${query}&num=10`,
@@ -17,29 +17,25 @@ export const webSearch = async (query: string) => {
           },
         },
       );
+      console.log("WebSearch by SERP API.")
       const data = await response.json();
       return data.organic_results;
     } else if (
       process.env.GOOGLE_SEARCH_API_KEY &&
       process.env.GOOGLE_CUSTOM_INDEX_ID
     ) {
+      console.log("WebSearch by Google Custom Search Engine.")
       const response = await fetch(
-        'https://www.googleapis.com/customsearch/v1',
+        `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_CUSTOM_INDEX_ID}&q=${query}&num=${process.env.GOOGLE_RESULT_NUM}`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            key: process.env.GOOGLE_SEARCH_API_KEY,
-            cx: process.env.GOOGLE_CUSTOM_INDEX_ID,
-            q: query,
-            num: process.env.GOOGLE_RESULT_NUM,
-          }),
+          }
         },
       );
       const data = await response.json();
-      // console.log(data);
+      console.log(data);
       return data.items;
     }
   } catch (error) {
