@@ -159,6 +159,16 @@ export const AgentView: FC = () => {
         } else {
           setAgentMessages(selectedExecution.agentMessages);
         }
+        if (selectedExecution.params) {
+          const params = selectedExecution.params;
+          setModel(params.model);
+          const _selectedAgent = ALL_AGENTS.find(
+            (agent) => agent.id === params.agent,
+          );
+          if (_selectedAgent) {
+            setSelectedAgent(_selectedAgent);
+          }
+        }
       }
     } else {
       reset();
