@@ -6,13 +6,18 @@ import type { GetStaticProps } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import nextI18NextConfig from '../../next-i18next.config.js';
 import { languages } from '@/utils/languages';
-import { STATE_KEY } from '@/utils/constants';
+import { STATE_KEY, CURRENT_USER_EMAIL } from '@/utils/constants';
 import { UIState } from '@/types/index.js';
 import { CollapsedButton } from '@/components/Sidebar/CollapsedButton';
+import { useRouter } from 'next/router';
 
 function Home() {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
-
+  const router = useRouter();
+  const { asPath } = router;
+  const index  = asPath.indexOf('email=');
+  const email = asPath.substr(index+6);
+  // console.log("email:" + decodeURIComponent(email));
   useEffect(() => {
     const item = localStorage.getItem(STATE_KEY);
     let show = false;
@@ -31,6 +36,9 @@ function Home() {
     }
     setShowSidebar(show);
     saveSidebarState(show);
+    if(email){
+      localStorage.setItem(CURRENT_USER_EMAIL, email);
+    }
   }, []);
 
   const saveSidebarState = (show: boolean) => {

@@ -4,6 +4,7 @@ export const SETTINGS_KEY = 'BABYAGIUI_SETTINGS';
 export const EXECUTIONS_KEY = 'BABYAGIUI_EXECUTIONS';
 export const STATE_KEY = 'BABYAGIUI_STATE';
 export const EXAMPLES_KEY = 'BABYAGIUI_EXAMPLES';
+export const CURRENT_USER_EMAIL = 'CURRENT_USER_EMAIL';
 
 export const MODELS = [
   {

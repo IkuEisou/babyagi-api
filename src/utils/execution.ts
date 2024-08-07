@@ -1,5 +1,5 @@
 import { AgentType, Execution } from '@/types';
-import { EXECUTIONS_KEY } from './constants';
+import { EXECUTIONS_KEY, CURRENT_USER_EMAIL } from './constants';
 
 export const updateExecution = (updatedExecution: Execution) => {
   const executions = savedExecutions().map((execution) => {
@@ -21,12 +21,14 @@ export const saveExecution = (execution: Execution) => {
 };
 
 const saveExecutions = (executions: Execution[]) => {
-  localStorage.setItem(EXECUTIONS_KEY, JSON.stringify(executions));
+  const exe_key = localStorage.getItem(CURRENT_USER_EMAIL) || EXECUTIONS_KEY ;
+  localStorage.setItem(exe_key, JSON.stringify(executions));
 };
 
 export const savedExecutions = () => {
+  const exe_key = localStorage.getItem(CURRENT_USER_EMAIL) || EXECUTIONS_KEY ;
   return JSON.parse(
-    localStorage.getItem(EXECUTIONS_KEY) || '[]',
+    localStorage.getItem(exe_key) || '[]',
   ) as Execution[];
 };
 
