@@ -31,9 +31,15 @@ export const stringifyTasks = (tasks: AgentTask[]): string => {
 };
 
 export const parseTasks = (jsonString: string): AgentTask[] => {
-  const parsedObj = JSON.parse(jsonString);
-  const camelCaseObj = convertKeys(parsedObj, snakeToCamelCase);
-  return camelCaseObj;
+  try{
+    const parsedObj = JSON.parse(jsonString);
+    const camelCaseObj = convertKeys(parsedObj, snakeToCamelCase);
+    return camelCaseObj;
+  }catch(error: any){
+    console.log(jsonString + "can not be parsed!");
+    console.log(error);
+    return [];
+  }
 };
 
 export const getTaskById = (taskList: AgentTask[], id: number) => {

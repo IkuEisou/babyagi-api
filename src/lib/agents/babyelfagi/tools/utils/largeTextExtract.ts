@@ -6,6 +6,7 @@ export const largeTextExtract = async (
   objective: string,
   largeString: string,
   task: AgentTask,
+  modelName: string,
   userApiKey?: string,
   callback?: (message: AgentMessage) => void,
   signal?: AbortSignal,
@@ -34,6 +35,7 @@ export const largeTextExtract = async (
       task.task,
       notes,
       chunk,
+      modelName,
       userApiKey,
       signal,
     );

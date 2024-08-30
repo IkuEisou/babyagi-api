@@ -96,6 +96,7 @@ export class WebLoader extends Skill {
             objective,
             item.content,
             task,
+            this.modelName,
             this.apiKeys.openai,
             this.handleMessage,
             this.abortSignal,

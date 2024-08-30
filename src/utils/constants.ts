@@ -8,7 +8,7 @@ export const CURRENT_USER_EMAIL = 'CURRENT_USER_EMAIL';
 
 export const MODELS = [
   {
-    id: 'gpt-4-0613',
+    id: 'gpt-4-1106-preview',
     name: 'OpenAI gpt-4',
     message: `GPT_4_WARNING`,
     icon: 'openai-logo.svg',

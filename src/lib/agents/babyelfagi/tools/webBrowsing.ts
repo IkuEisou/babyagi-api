@@ -96,6 +96,7 @@ export const webBrowsing = async (
       objective,
       content.slice(0, 20000),
       task,
+      modelName,
       userApiKey,
       messageCallback,
       signal,

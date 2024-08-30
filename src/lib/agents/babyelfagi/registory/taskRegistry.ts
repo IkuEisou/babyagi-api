@@ -89,6 +89,13 @@ export class TaskRegistry {
           input: prompt,
         });
         result = response.text;
+        console.log("Got task list:" + result);
+        if (result.includes("です：")){
+          const jsonStr = result.split('です：');
+          if(jsonStr.length > 0){
+            result = jsonStr[1];
+          }
+        }
       }else{
         const model =  new ChatOpenAI(
           {
@@ -125,7 +132,7 @@ export class TaskRegistry {
       }
       console.log(error);
     }
-    
+    console.log("Created TaskList:" + result);
     if (result === undefined) {
       return;
     }
