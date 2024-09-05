@@ -14,12 +14,12 @@ export const webScrape = async (url: string) => {
 
 const fetchUrlContent = async (url: string) => {
   try {
-    if(url.includes(".pdf")){
+    if (url.includes('.pdf')) {
       let config = {
         method: 'get',
         maxBodyLength: Infinity,
       };
-      const res = await fetch(url,config);
+      const res = await fetch(url, config);
       const resBuff = await res.arrayBuffer();
       const uint8array = new Uint8Array(resBuff);
       const resStr = new TextDecoder().decode(uint8array);
