@@ -6,7 +6,7 @@ export const webSearch = async (query: string) => {
         'The environment variable name has been changed due to a typo: SEARP_API_KEY. Please fix it to SERP_API_KEY.',
       );
     }
-    console.log(`WebSearch for ${query}.`)
+    // console.log(`WebSearch for ${query}.`)
     if (process.env.SERP_API_KEY) {
       const response = await fetch(
         `https://serpapi.com/search?api_key=${process.env.SERP_API_KEY}&engine=google&q=${query}&num=10`,
@@ -37,12 +37,30 @@ export const webSearch = async (query: string) => {
           }
         },
       );
+      if(response.headers.get("content-type")?.includes('text/event-stream')){
+        const reader = response.body?.getReader();
+        if (!reader) return;
+
+        let decoder = new TextDecoder();
+        let stmData = "";
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          if (!value) continue
+          const lines = decoder.decode(value)
+          console.log("Stream data:" + lines);
+          const text = lines.split('data: ')[1].trim()
+          stmData = stmData + text;
+          console.log("stmData:" + stmData);
+        }
+        return stmData;
+      }
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
       return data.items;
     }
   } catch (error) {
-    console.log('error: ', error);
+    console.log('WebSearch error: ', error);
     return;
   }
 };
