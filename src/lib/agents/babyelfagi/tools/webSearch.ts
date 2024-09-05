@@ -17,41 +17,41 @@ export const webSearch = async (query: string) => {
           },
         },
       );
-      console.log("WebSearch by SERP API.")
+      console.log('WebSearch by SERP API.');
       const data = await response.json();
-      if(data.organic_results !== undefined){
+      if (data.organic_results !== undefined) {
         return data.organic_results;
       }
-    } 
+    }
     if (
       process.env.GOOGLE_SEARCH_API_KEY &&
       process.env.GOOGLE_CUSTOM_INDEX_ID
     ) {
-      console.log("WebSearch by Google Custom Search Engine.")
+      console.log('WebSearch by Google Custom Search Engine.');
       const response = await fetch(
         `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_CUSTOM_INDEX_ID}&q=${query}&num=${process.env.GOOGLE_RESULT_NUM}`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-          }
+          },
         },
       );
-      if(response.headers.get("content-type")?.includes('text/event-stream')){
+      if (response.headers.get('content-type')?.includes('text/event-stream')) {
         const reader = response.body?.getReader();
         if (!reader) return;
 
         let decoder = new TextDecoder();
-        let stmData = "";
+        let stmData = '';
         while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          if (!value) continue
-          const lines = decoder.decode(value)
-          console.log("Stream data:" + lines);
-          const text = lines.split('data: ')[1].trim()
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (!value) continue;
+          const lines = decoder.decode(value);
+          console.log('Stream data:' + lines);
+          const text = lines.split('data: ')[1].trim();
           stmData = stmData + text;
-          console.log("stmData:" + stmData);
+          console.log('stmData:' + stmData);
         }
         return stmData;
       }

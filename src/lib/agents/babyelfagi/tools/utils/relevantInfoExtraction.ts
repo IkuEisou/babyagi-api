@@ -6,7 +6,7 @@ import {
   SystemMessagePromptTemplate,
 } from 'langchain/prompts';
 import { MODELS } from '@/utils/constants';
-import { ChatAnthropic } from "@langchain/anthropic";
+import { ChatAnthropic } from '@langchain/anthropic';
 import { ChatPromptTemplate as coreChatPromptTemplate } from '@langchain/core/prompts';
 
 export const relevantInfoExtraction = async (
@@ -45,17 +45,15 @@ export const relevantInfoExtraction = async (
         chunk,
       });
       return response.text;
-    }
-    else{
+    } else {
       const llm = new ChatAnthropic({
-          anthropicApiKey: process.env['ANTHROPIC_API_KEY'],
-          modelName,
-          temperature: 0.7,
-          maxTokensToSample: 800,
-          topP: 1,
-          streaming: true,
-        },
-      );
+        anthropicApiKey: process.env['ANTHROPIC_API_KEY'],
+        modelName,
+        temperature: 0.7,
+        maxTokensToSample: 800,
+        topP: 1,
+        streaming: true,
+      });
       const systemTemplate = `Objective: {objective}\nCurrent Task:{task}`;
       const relevantInfoExtractionTemplate = `Analyze the following text and extract information relevant to our objective and current task, and only information relevant to our objective and current task. If there is no relevant information do not say that there is no relevant informaiton related to our objective. ### Then, update or start our notes provided here (keep blank if currently blank): {notes}.### Text to analyze: {chunk}.### Updated Notes:`;
       const prompt4Anthropic = coreChatPromptTemplate.fromMessages([
@@ -66,7 +64,7 @@ export const relevantInfoExtraction = async (
         objective,
         task,
         notes,
-        chunk
+        chunk,
       });
       return response.text;
     }
