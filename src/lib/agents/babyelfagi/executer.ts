@@ -30,23 +30,25 @@ export class BabyElfAGI extends AgentExecuter {
       this.verbose &&
         console.log('Abort signal received. Stopping execution...');
     });
-
+    const api_key =
+      userApiKey ||
+      process.env.AZURE_OPENAI_API_KEY ||
+      process.env.OPENAI_API_KEY;
     this.skillRegistry = new SkillRegistry(
       this.handlers.handleMessage,
       this.verbose,
       this.modelName,
       this.language,
       specifiedSkills,
-      userApiKey,
+      api_key,
       this.signal,
     );
-
     const useSpecifiedSkills = specifiedSkills.length > 0;
     this.taskRegistry = new TaskRegistry(
       this.language,
       this.verbose,
       useSpecifiedSkills,
-      userApiKey,
+      api_key,
       this.signal,
     );
   }
@@ -150,7 +152,7 @@ export class BabyElfAGI extends AgentExecuter {
               this.objective,
               output,
               skillDescriptions,
-              this.modelName
+              this.modelName,
             );
 
           // Insert new tasks
