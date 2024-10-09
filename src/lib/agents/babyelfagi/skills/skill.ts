@@ -2,6 +2,8 @@ import { AgentTask, LLMParams, AgentMessage } from '@/types';
 import { ChatOpenAI } from 'langchain/chat_models/openai';
 import { HumanChatMessage } from 'langchain/schema';
 import { v4 as uuidv4 } from 'uuid';
+import { AzureChatOpenAI } from '@langchain/openai';
+import { ChatPromptTemplate } from '@langchain/core/prompts';
 
 export type SkillType = 'normal' | 'dev';
 
@@ -31,7 +33,7 @@ export class Skill {
     apiKeys: { [key: string]: string },
     handleMessage: (message: AgentMessage) => Promise<void>,
     verbose: boolean = false,
-    modelName: string = "gpt-3.5-turbo",
+    modelName: string = 'gpt-3.5-turbo',
     language: string = 'en',
     abortSignal?: AbortSignal,
   ) {
@@ -125,6 +127,35 @@ export class Skill {
       taskId: task.id.toString(),
       status: 'complete',
     };
+    const prompt4Temp = ChatPromptTemplate.fromMessages([
+      ['system', this.descriptionForModel],
+      ['human', '{input}'],
+    ]);
+    if (process.env.AZURE_OPENAI_API_KEY) {
+      const llm = new AzureChatOpenAI({
+        model: this.modelName,
+        azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+        azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME,
+        azureOpenAIApiDeploymentName: this.modelName.includes('gpt-3.5')
+          ? process.env.AZURE_OPENAI_API_DEPLOYMENT_GPT35_NAME
+          : process.env.AZURE_OPENAI_API_DEPLOYMENT_GPT4_NAME,
+        azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+        azureOpenAIBasePath: this.modelName.includes('gpt-3.5')
+          ? process.env.AZURE_OPENAI_GPT35_BASE_PATH
+          : process.env.AZURE_OPENAI_GPT4_BASE_PATH,
+        temperature: 0.7,
+        maxTokens: 1500,
+        topP: 1,
+        streaming: true,
+        verbose: false,
+      });
+      const chain = prompt4Temp.pipe(llm);
+      const response = await chain.invoke({
+        input: prompt,
+      });
+      console.log('GenerateText:' + response.text);
+      return response.text;
+    }
     const llm = new ChatOpenAI(
       {
         openAIApiKey: this.apiKeys.openai,
@@ -151,7 +182,7 @@ export class Skill {
       if (error.name === 'AbortError') {
         return `Task aborted.`;
       }
-      console.log('error: ', error);
+      console.log('GenerateText error: ', error);
       return 'Failed to generate text.';
     }
   }

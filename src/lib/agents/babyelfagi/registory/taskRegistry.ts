@@ -1,11 +1,13 @@
 import { AgentTask, AgentMessage, TaskOutputs } from '@/types';
 import { ChatOpenAI } from 'langchain/chat_models/openai';
-import { ChatAnthropic } from "@langchain/anthropic";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { ChatAnthropic } from '@langchain/anthropic';
+import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { parseTasks } from '@/utils/task';
 import { HumanChatMessage, SystemChatMessage } from 'langchain/schema';
 import { SkillRegistry } from './skillRegistry';
 import { findMostRelevantObjective } from '@/utils/objective';
+import { AzureChatOpenAI } from '@langchain/openai';
+
 export class TaskRegistry {
   tasks: AgentTask[];
   verbose: boolean = false;
@@ -61,43 +63,65 @@ export class TaskRegistry {
     EXAMPLE OBJECTIVE=${exapmleObjective}
     TASK LIST=${JSON.stringify(exampleTaskList)}
     OBJECTIVE=${objective}
-    TASK LIST=`;
+    `;
     const systemPrompt = 'You are a task creation AI.';
     const systemMessage = new SystemChatMessage(systemPrompt);
     const messages = new HumanChatMessage(prompt);
-    const prompt4Anthropic = ChatPromptTemplate.fromMessages([
-      [
-        "system",
-        systemPrompt,
-      ],
-      ["human", "{input}"],
+    const prompt4Temp = ChatPromptTemplate.fromMessages([
+      ['system', systemPrompt],
+      ['human', '{input}'],
     ]);
     let result = '';
     // console.log('ANTHROPIC_API_KEY:' + process.env['ANTHROPIC_API_KEY']);
-    console.log('CreateTaskList by ' + modelName);
+    // console.log('CreateTaskList by ' + modelName);
     try {
-      if (modelName.includes('claude')){
+      if (modelName.includes('claude')) {
         const model = new ChatAnthropic({
-            apiKey: process.env['ANTHROPIC_API_KEY'],
-            modelName,
-            temperature: 0.2,
-            maxTokensToSample: 800,
-            topP: 1,
-            streaming: true
-          });
-        const response = await prompt4Anthropic.pipe(model).invoke({
+          apiKey: process.env['ANTHROPIC_API_KEY'],
+          modelName,
+          temperature: 0.2,
+          maxTokensToSample: 800,
+          topP: 1,
+          streaming: true,
+        });
+        const response = await prompt4Temp.pipe(model).invoke({
           input: prompt,
         });
         result = response.text;
-        console.log("Got task list:" + result);
-        if (result.includes("です：")){
+        if (result.includes('です：')) {
           const jsonStr = result.split('です：');
-          if(jsonStr.length > 0){
+          if (jsonStr.length > 0) {
             result = jsonStr[1];
           }
         }
-      }else{
-        const model =  new ChatOpenAI(
+      } else if (process.env.AZURE_OPENAI_API_KEY) {
+        const llm = new AzureChatOpenAI({
+          model: modelName,
+          azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+          azureOpenAIApiInstanceName:
+            process.env.AZURE_OPENAI_API_INSTANCE_GPT4_NAME,
+          azureOpenAIApiDeploymentName:
+            process.env.AZURE_OPENAI_API_DEPLOYMENT_GPT4_NAME,
+          azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+          azureOpenAIBasePath: process.env.AZURE_OPENAI_GPT4_BASE_PATH,
+          temperature: 0,
+          maxTokens: 1500,
+          topP: 1,
+          maxRetries: 2,
+          streaming: true,
+          verbose: false,
+        });
+        const chain = prompt4Temp.pipe(llm);
+        const response = await chain.invoke({
+          input: prompt,
+        });
+        result = response.text;
+        if (result.includes('```json')) {
+          const jsonStr = result.replace('```json', '').replace('```', '');
+          result = jsonStr;
+        }
+      } else {
+        const model = new ChatOpenAI(
           {
             openAIApiKey: this.userApiKey,
             modelName: this.useSpecifiedSkills ? modelName : 'gpt-4',
@@ -123,8 +147,8 @@ export class TaskRegistry {
           },
           { baseOptions: { signal: this.signal } },
         );
-          const response = await model.call([systemMessage, messages]);
-          result = response.text;
+        const response = await model.call([systemMessage, messages]);
+        result = response.text;
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
@@ -132,7 +156,7 @@ export class TaskRegistry {
       }
       console.log(error);
     }
-    console.log("Created TaskList:" + result);
+    console.log('Created TaskList:' + result);
     if (result === undefined) {
       return;
     }
@@ -243,33 +267,58 @@ export class TaskRegistry {
   Here is the current task list: ${JSON.stringify(this.tasks)}
   EXAMPLE OUTPUT FORMAT = ${JSON.stringify(example)}
   OUTPUT = `;
-    const systemPrompt = 'You are a task creation AI.'
+    const systemPrompt = 'You are a task creation AI.';
     console.log(
       '\nReflecting on task output to generate new tasks if necessary...\n',
     );
     let result = '';
-    const prompt4Anthropic = ChatPromptTemplate.fromMessages([
-      [
-        "system",
-        systemPrompt,
-      ],
-      ["human", "{input}"],
+    const prompt4Temp = ChatPromptTemplate.fromMessages([
+      ['system', systemPrompt],
+      ['human', '{input}'],
     ]);
-    console.log('Reflecting on task output to generate new tasks by ' + modelName);
-    if (modelName.includes('claude')){
-      const model =  new ChatAnthropic({
+    console.log(
+      'Reflecting on task output to generate new tasks by ' + modelName,
+    );
+    if (modelName.includes('claude')) {
+      const model = new ChatAnthropic({
         apiKey: process.env['ANTHROPIC_API_KEY'],
         modelName,
         temperature: 0.7,
         maxTokensToSample: 1500,
-        topP: 1
+        topP: 1,
       });
-      const response =  await prompt4Anthropic.pipe(model).invoke({
+      const response = await prompt4Temp.pipe(model).invoke({
         input: prompt,
       });
       result = response.text;
-    }else{
-      const model =  new ChatOpenAI({
+    } else if (process.env.AZURE_OPENAI_API_KEY) {
+      const llm = new AzureChatOpenAI({
+        model: modelName,
+        azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+        azureOpenAIApiInstanceName:
+          process.env.AZURE_OPENAI_API_INSTANCE_GPT4_NAME,
+        azureOpenAIApiDeploymentName:
+          process.env.AZURE_OPENAI_API_DEPLOYMENT_GPT4_NAME,
+        azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+        azureOpenAIBasePath: process.env.AZURE_OPENAI_GPT4_BASE_PATH,
+        temperature: 0.7,
+        maxTokens: 1500,
+        topP: 1,
+        maxRetries: 2,
+        streaming: true,
+        verbose: false,
+      });
+      const chain = prompt4Temp.pipe(llm);
+      const response = await chain.invoke({
+        input: prompt,
+      });
+      result = response.text;
+      if (result.includes('```json')) {
+        const jsonStr = result.replace('```json', '').replace('```', '');
+        result = jsonStr;
+      }
+    } else {
+      const model = new ChatOpenAI({
         openAIApiKey: this.userApiKey,
         modelName,
         temperature: 0.7,

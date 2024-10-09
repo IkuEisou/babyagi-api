@@ -1,4 +1,5 @@
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+import { AzureOpenAIEmbeddings } from '@langchain/openai';
 
 const JSON_FILES = ['example3', 'example4', 'example_deer'];
 const JSON_FILES_FOR_DEV = [
@@ -48,13 +49,27 @@ async function getEmbedding(
   userApiKey?: string,
 ) {
   try {
+    if (process.env.AZURE_OPENAI_API_KEY) {
+      const embeddings = new AzureOpenAIEmbeddings({
+        modelName,
+        azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+        azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME,
+        azureOpenAIApiEmbeddingsDeploymentName:
+          process.env.AZURE_OPENAI_API_EMBEDDINGS_DEPLOYMENT_NAME,
+        azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+        maxRetries: 1,
+      });
+      // console.log('GetEmbedding with model: ' + modelName);
+      // console.log(text);
+      return await embeddings.embedQuery(text);
+    }
     const embedding = new OpenAIEmbeddings({
       modelName,
       openAIApiKey: userApiKey,
     });
     return await embedding.embedQuery(text);
   } catch (e) {
-    throw new Error(`error: ${e}`);
+    throw new Error(`GetEmbedding error: ${e}`);
   }
 }
 
@@ -76,6 +91,7 @@ export async function findMostRelevantObjective(
   userInput: string,
   userApiKey?: string,
 ) {
+  // console.log('findMostRelevantObjective...');
   const examples = await getObjectivesExamples();
 
   let maxSimilarity = -Infinity;
@@ -89,14 +105,17 @@ export async function findMostRelevantObjective(
   const userInputEmbedding = await getEmbedding(
     userInput,
     'text-embedding-ada-002',
+    // 'text-embedding-3-large',
     userApiKey,
   );
 
   for (const example of examples) {
     try {
+      // console.log(example.objective);
       const objectiveEmbedding = await getEmbedding(
         example.objective,
         'text-embedding-ada-002',
+        // 'text-embedding-3-large',
         userApiKey,
       );
       const similarity = calculateSimilarity(

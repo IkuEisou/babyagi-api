@@ -4,6 +4,7 @@ import { ChatAnthropic } from '@langchain/anthropic';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { textCompletionToolPrompt } from '../../../../../utils/prompt';
 import { HumanChatMessage } from 'langchain/schema';
+import { AzureChatOpenAI } from '@langchain/openai';
 
 export const textCompletion = async (
   objective: string,
@@ -21,7 +22,20 @@ export const textCompletion = async (
     modelName = 'gpt-3.5-turbo-16k-0613';
     console.log(`TextCompletion for the ${prompt} by ${modelName} forced! `);
   }
-  console.log('textCompletion by ' + modelName);
+  console.log('TextCompletion by ' + modelName);
+  console.log(
+    'AZURE_OPENAI_BASE_PATH_TEST:' + process.env.AZURE_OPENAI_BASE_PATH_TEST,
+  );
+  const systemPrompt = textCompletionToolPrompt(
+    objective,
+    language,
+    task.task,
+    dependentTasksOutput,
+  );
+  const prompt4Temp = ChatPromptTemplate.fromMessages([
+    ['system', systemPrompt],
+    ['human', '{input}'],
+  ]);
   try {
     if (modelName.includes('claude')) {
       const llm = new ChatAnthropic({
@@ -32,19 +46,34 @@ export const textCompletion = async (
         topP: 1,
         streaming: true,
       });
-      const systemPrompt = textCompletionToolPrompt(
-        objective,
-        language,
-        task.task,
-        dependentTasksOutput,
-      );
-      const prompt4Anthropic = ChatPromptTemplate.fromMessages([
-        ['system', systemPrompt],
-        ['human', '{input}'],
-      ]);
-      const response = await prompt4Anthropic.pipe(llm).invoke({
+      const response = await prompt4Temp.pipe(llm).invoke({
         input: prompt,
       });
+      return response.text;
+    } else if (process.env.AZURE_OPENAI_API_KEY) {
+      const llm = new AzureChatOpenAI({
+        model: modelName,
+        azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+        azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME,
+        azureOpenAIApiDeploymentName: modelName.includes('gpt-3.5')
+          ? process.env.AZURE_OPENAI_API_DEPLOYMENT_GPT35_NAME
+          : process.env.AZURE_OPENAI_API_DEPLOYMENT_GPT4_NAME,
+        azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+        azureOpenAIBasePath: modelName.includes('gpt-3.5')
+          ? process.env.AZURE_OPENAI_GPT35_BASE_PATH
+          : process.env.AZURE_OPENAI_GPT4_BASE_PATH,
+        temperature: 0.7,
+        maxTokens: 800,
+        topP: 1,
+        maxRetries: 2,
+        streaming: true,
+        verbose: false,
+      });
+      const chain = prompt4Temp.pipe(llm);
+      const response = await chain.invoke({
+        input: prompt,
+      });
+      console.log('TextCompletion result:' + response.text);
       return response.text;
     } else {
       const llm = new ChatOpenAI(
@@ -93,7 +122,7 @@ export const textCompletion = async (
     if (error.name === 'AbortError') {
       return null;
     }
-    console.log('error: ', error);
+    console.log('TextCompletion error: ', error);
     return 'Failed to generate text.';
   }
 };

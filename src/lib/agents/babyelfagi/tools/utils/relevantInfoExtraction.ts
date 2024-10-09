@@ -8,6 +8,7 @@ import {
 import { MODELS } from '@/utils/constants';
 import { ChatAnthropic } from '@langchain/anthropic';
 import { ChatPromptTemplate as coreChatPromptTemplate } from '@langchain/core/prompts';
+import { AzureChatOpenAI } from '@langchain/openai';
 
 export const relevantInfoExtraction = async (
   objective: string,
@@ -21,10 +22,48 @@ export const relevantInfoExtraction = async (
   console.log('RelevantInfoExtraction by ' + modelName);
   // const modelName = 'gpt-3.5-turbo-16k-0613'; // use a fixed model
   const model = MODELS.find((model) => model.name === 'OpenAI gpt-4');
+  const prompt = relevantInfoExtractionPrompt();
+  const systemTemplate = `Objective: {objective}\nCurrent Task:{task}`;
+  const relevantInfoExtractionTemplate = `Analyze the following text and extract information relevant to our objective and current task, and only information relevant to our objective and current task. If there is no relevant information do not say that there is no relevant informaiton related to our objective. ### Then, update or start our notes provided here (keep blank if currently blank): {notes}.### Text to analyze: {chunk}.### Updated Notes:`;
+  const prompt4Temp = coreChatPromptTemplate.fromMessages([
+    ['system', systemTemplate],
+    ['human', relevantInfoExtractionTemplate],
+  ]);
   try {
-    if (!modelName.includes('claude')) {
+    if (process.env.AZURE_OPENAI_API_KEY) {
+      const llm = new AzureChatOpenAI({
+        model: modelName,
+        azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+        azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME,
+        azureOpenAIApiDeploymentName: modelName.includes('gpt-3.5')
+          ? process.env.AZURE_OPENAI_API_DEPLOYMENT_GPT35_NAME
+          : process.env.AZURE_OPENAI_API_DEPLOYMENT_GPT4_NAME,
+        azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+        azureOpenAIBasePath: modelName.includes('gpt-3.5')
+          ? process.env.AZURE_OPENAI_GPT35_BASE_PATH
+          : process.env.AZURE_OPENAI_GPT4_BASE_PATH,
+        temperature: 0.7,
+        maxTokens: 800,
+        topP: 1,
+        maxRetries: 2,
+        streaming: true,
+        verbose: false,
+      });
+      const chain = prompt4Temp.pipe(llm);
+      const response = await chain.invoke({
+        objective,
+        task,
+        notes,
+        chunk,
+      });
+      let result = response.text;
+      if (result.includes('```json')) {
+        const jsonStr = result.replace('```json', '').replace('```', '');
+        result = jsonStr;
+      }
+      return result;
+    } else if (!modelName.includes('claude')) {
       const model_name = model?.id || 'gpt-4-1106-preview';
-      const prompt = relevantInfoExtractionPrompt();
       const llm = new OpenAIChat(
         {
           modelName: model_name,
@@ -54,13 +93,7 @@ export const relevantInfoExtraction = async (
         topP: 1,
         streaming: true,
       });
-      const systemTemplate = `Objective: {objective}\nCurrent Task:{task}`;
-      const relevantInfoExtractionTemplate = `Analyze the following text and extract information relevant to our objective and current task, and only information relevant to our objective and current task. If there is no relevant information do not say that there is no relevant informaiton related to our objective. ### Then, update or start our notes provided here (keep blank if currently blank): {notes}.### Text to analyze: {chunk}.### Updated Notes:`;
-      const prompt4Anthropic = coreChatPromptTemplate.fromMessages([
-        ['system', systemTemplate],
-        ['human', relevantInfoExtractionTemplate],
-      ]);
-      const response = await prompt4Anthropic.pipe(llm).invoke({
+      const response = await prompt4Temp.pipe(llm).invoke({
         objective,
         task,
         notes,
