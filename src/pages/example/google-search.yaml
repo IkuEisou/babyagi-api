@@ -1,0 +1,59 @@
+{
+  'openapi': '3.1.0',
+  'info':
+    {
+      'title': 'Google Search',
+      'description': 'Google Search.',
+      'version': 'v1.0.0',
+    },
+  'servers': [{ 'url': 'https://www.googleapis.com' }],
+  'paths':
+    {
+      '/customsearch/v1':
+        {
+          'get':
+            {
+              'description': 'Google Search',
+              'operationId': 'Google Search',
+              'parameters':
+                [
+                  {
+                    'name': 'q',
+                    'in': 'query',
+                    'description': 'query text',
+                    'required': true,
+                    'schema': { 'type': 'string' },
+                  },
+                  {
+                    'name': 'key',
+                    'in': 'query',
+                    'description': 'api key',
+                    'required': false,
+                    'schema':
+                      {
+                        'type': 'string',
+                        'default': 'xxx',
+                      },
+                  },
+                  {
+                    'name': 'cx',
+                    'in': 'query',
+                    'description': 'client ID',
+                    'required': false,
+                    'schema':
+                      { 'type': 'string', 'default': 'xxx' },
+                  },
+                  {
+                    'name': 'num',
+                    'in': 'query',
+                    'description': 'result num',
+                    'required': false,
+                    'schema': { 'type': 'int', 'default': 10 },
+                  },
+                ],
+              'deprecated': false,
+            },
+        },
+    },
+  'components': { 'schemas': {} },
+}

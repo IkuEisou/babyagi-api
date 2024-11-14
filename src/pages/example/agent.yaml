@@ -1,0 +1,65 @@
+openapi: '3.0.0'
+info:
+  version: 1.0.0
+  title: Baby AGI Agent
+  license:
+    name: MIT
+servers:
+  - url: http://news-advisor-stg.japaneast.cloudapp.azure.com:7845/api
+paths:
+  /agent:
+    post:
+      summary: Using Agent for your needs
+      operationId: useAgent
+      tags:
+        - agents
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+        required: true
+      responses:
+        '201':
+          description: Null response
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Agent:
+      type: object
+      required:
+        - input
+        - agent_id
+        - model_name
+      properties:
+        input:
+          type: string
+        agent_id:
+          type: string
+        model_name:
+          type: string
+        language:
+          type: string
+          default: ja
+        user_key:
+          type: string
+          default: sk
+        verbose:
+          type: boolean
+          default: true
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
